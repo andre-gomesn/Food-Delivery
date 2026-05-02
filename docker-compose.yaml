@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.8.3
+    container_name: kafka
+    ports:
+      - "9092:9092"
+
+    environment:
+      #lets it manage and operate itself
+      KAFKA_KRAFT_MODE: 'true'
+
+      CLUSTER_ID: '1L6g7nGhU-eAKfL--X25wo'
+      KAFKA_NODE_ID: 1
+
+      #defines what role this node will have
+      KAFKA_PROCESS_ROLES: broker,controller
+      #defines which brokers are controllers and can vote on important cluster decisions - id@kafka:port, it can be a group too
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      #means only one copy of kafka metadata that keeps track of each messages each consumers read, in production is more than 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+      #open 2 doors, one for regular data traffic (plaintext) where producers and consumers connect, the other (controller) where brokers communicate
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      #defines the address that kafka tells brokers to connect to
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      #defines the address that kafka tells controllers to connect to
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      #tells where to store all its data
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+
+    #docker concept for data persistency - the path is where kafka stores all its data by default
+    volumes:
+      - kafka_kraft:/var/lib/kafka/data
+
+#docker concept for data persistency
+volumes:
+  kafka_kraft:
+
